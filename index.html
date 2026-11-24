@@ -39,7 +39,7 @@ table{width:100%;border-collapse:collapse;font-size:14px}th,td{padding:8px;borde
 <div id="tab-players" class="card" style="display:none"><h2>TOP SCORERS</h2><div id="posAward" style="background:#37003c;color:#fff;padding:12px;border-radius:12px"></div><div id="playerAdmin"></div><div id="playerList"></div></div>
 <div id="tab-teams" class="card" style="display:none"><h2>TEAMS</h2><div id="teamAdmin"></div><div id="teamList"></div></div>
 <div id="tab-transfers" class="card" style="display:none"><h2>TRANSFERS</h2><div id="transferAdmin"></div><div id="transferList"></div></div>
-<div id="tab-live" class="card" style="display:none;background:linear-gradient(90deg,#ff2882,#e304f8);color:#fff;text-align:center"><h2>LIVE MATCH CENTER</h2><div id="liveTimer" style="font-size:42px;font-weight:900">00:00</div><div id="liveStatus">Not Started</div><div id="liveAdded" style="color:#fef08a;font-weight:800"></div><div id="statAdminBox" style="background:#fff3cd;padding:10px;border-radius:10px;margin-top:10px;display:none">
+<div id="tab-live" class="card" style="display:none;background:linear-gradient(90deg,#4539e8,#f032ba));color:#fff;text-align:center"><h2>LIVE MATCH CENTER</h2><div id="liveTimer" style="font-size:42px;font-weight:900">00:00</div><div id="liveStatus">Not Started</div><div id="liveAdded" style="color:#fef08a;font-weight:800"></div><div id="statAdminBox" style="background:#fff3cd;padding:10px;border-radius:10px;margin-top:10px;display:none">
 <b>📊 STATS - Click +1 Like Opta</b><br>
 Team: <select id="statTeam"><option value="H">Home</option><option value="A">Away</option></select>
 Stat: <select id="statType">
@@ -133,8 +133,8 @@ function resetStats(){
   save(); renderAll();
 }
 // Show stats box only for Admin
-setInterval(()=>{ const b=document.getElementById('statAdminBox'); if(b) b.style.display = (typeof isAdmin!=='undefined' && isAdmin) ? 'block':'none'; }, 500);
-// --- FIREBASE LIVE ---
+setInterval(()=>{ const b=document.getElementById('statAdminBox'); if(b) b.style.display = (typeof isAdmin!=='undefined' && isAdmin && typeof liveFixtureId!=='undefined' && liveFixtureId) ? 'block':'none'; }, 500);
+  // --- FIREBASE LIVE ---
   const firebaseConfig = {
   apiKey: "AIzaSyDsD4AiSqALdDPns8D7-2FIstoU_MK5io",
   authDomain: "ruborogota-premier-league.firebaseapp.com",
