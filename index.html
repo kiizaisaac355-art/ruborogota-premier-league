@@ -23,7 +23,10 @@ table{width:100%;border-collapse:collapse;font-size:14px}th,td{padding:8px;borde
 .fx-score{background:#37003c;color:#fff;padding:6px 12px;border-radius:6px;min-width:68px;text-align:center}
 .badge{padding:4px 10px;border-radius:20px;font-size:12px;font-weight:900}
 .adminBadge{background:#00ff85;color:#37003c}.fanBadge{background:#fff;color:#37003c;border:1px solid #ddd}
-</style></head>
+</style>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+</head>
 <body data-admin="false"><div class="wrap">
 <div class="head"><img src="logo.jpg" onerror="this.style.display='none'"><div><div id="modeBadge"></div><h1 style="margin:0">RUBOROGOTA PREMIER LEAGUE</h1><h2 style="margin:0">2026/2027</h2></div></div>
 <div class="nav">
@@ -93,4 +96,34 @@ function addAddedTime(m){ if(!requireAdmin()) return; liveAdded=m; document.getE
 function fullTime(){ if(!requireAdmin()) return; if(!liveFixtureId){alert('No live match');return} clearInterval(liveTimer); var fx=d.fixtures.find(function(x){return x.id===liveFixtureId}); fx.status='FT'; fx.played=true; fx.matchSeconds=liveSec; document.getElementById('liveStatus').innerHTML='FULL TIME - '+fx.home+' '+fx.hs+' - '+fx.as+' '+fx.away; liveFixtureId=null; save(); alert('FULL TIME!'); }
 function renderAll(){ checkAdmin(); renderHome(); renderTable(); renderFixtures(); renderPlayers(); renderTeams(); renderTransfers(); renderLive(); }
 renderAll();
+  // --- FIREBASE LIVE ---
+const firebaseConfig = {
+  apiKey: "AIzaSyDsD4AiSqALdDPns8D7-2FIstoU_MK5io",
+  authDomain: "ruborogota-premier-league.firebaseapp.com",
+  projectId: "ruborogota-premier-league",
+  storageBucket: "ruborogota-premier-league.firebasestorage.app",
+  messagingSenderId: "271003362328",
+  appId: "1:271003362328:web:0b454eb5e74c7f4e67cf6d"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const docRef = db.collection("league").doc("main");
+const _oldSave = save;
+save = function(){
+  localStorage.setItem('rpl_final', JSON.stringify(d));
+  docRef.set({data: JSON.stringify(d)}).catch(e=>console.log(e));
+  renderAll();
+};
+docRef.onSnapshot((doc)=>{
+  if(doc.exists){
+    try{
+      const newD = JSON.parse(doc.data().data);
+      if(JSON.stringify(newD) !== JSON.stringify(d)){
+        d = newD;
+        localStorage.setItem('rpl_final', JSON.stringify(d));
+        renderAll();
+      }
+    }catch(e){}
+  }
+});
 </script></body></html>
