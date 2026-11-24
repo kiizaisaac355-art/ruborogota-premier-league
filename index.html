@@ -110,7 +110,7 @@ function renderAll(){ checkAdmin(); renderHome(); renderTable(); renderFixtures(
 renderAll();
   // --- REAL STATS - OPTA STYLE ---
 function addStat(){
-  const f = d.fixtures.find(function(x){return x.id===liveFixtureId});
+  const f = d.fixtures.find(function(x){return x.status==='LIVE'});
   if(!f) return alert("Open a LIVE match first");
   fixF(f);
   const team = document.getElementById('statTeam').value; // H or A
@@ -128,13 +128,13 @@ function addStat(){
   alert("Added! Fans see it in 2 sec");
 }
 function resetStats(){
-  const f = d.fixtures.find(function(x){return x.id===liveFixtureId});
+  const f = d.fixtures.find(function(x){return x.status==='LIVE'});
   if(!f) return;
-f.stats.possH=50; f.stats.possA=50; f.stats.shotsH=0; f.stats.shotsA=0; f.stats.shotsOnH=0; f.stats.shotsOnA=0; f.stats.cornersH=0; f.stats.cornersA=0; f.stats.foulsH=0; f.stats.foulsA=0;f.stats.AfoulsA=0;
+f.stats.possH=50; f.stats.possA=50; f.stats.shotsH=0; f.stats.shotsA=0; f.stats.shotsOnH=0; f.stats.shotsOnA=0; f.stats.cornersH=0; f.stats.cornersA=0; f.stats.foulsH=0; f.stats.foulsA=0;
   save(); renderAll();
 }
 // Show stats box only for Admin
-setInterval(()=>{ const b=document.getElementById('statAdminBox'); if(b) b.style.display = (typeof isAdmin!=='undefined' && isAdmin && typeof liveFixtureId!=='undefined' && liveFixtureId) ? 'block':'none'; }, 500);
+setInterval(()=>{ const b=document.getElementById('statAdminBox'); if(b) b.style.display = (typeof isAdmin!=='undefined' && isAdmin && d.fixtures.some(function(x){return x.status==='LIVE'})) ? 'block':'none'; }, 500);
   // --- FIREBASE LIVE ---
   const firebaseConfig = {
   apiKey: "AIzaSyDsD4AiSqALdDPns8D7-2FIstoU_MK5io",
