@@ -49,7 +49,7 @@ Stat: <select id="statType">
 <option value="fouls">Fouls</option>
 <option value="poss">Possession +1%</option>
 </select>
-<button onclick="addStat()" style="background:#ff0066;color:white;padding:8px 12px;border:none;border-radius:8px;font-weight:bold">+1 ADD</button>
+<button onclick="addLiveStat()" style="background:#ff0066;color:white;padding:8px 12px;border:none;border-radius:8px;font-weight:bold">+1 ADD</button>
 <button onclick="resetStats()" style="background:#333;color:white;padding:8px;border:none;border-radius:8px">Reset</button>
 </div><div id="liveScoreBig" style="font-size:22px;font-weight:900;margin:8px 0"></div><div id="liveAdmin"></div><div id="goalList" style="text-align:left"></div></div>
 </div>
@@ -112,16 +112,17 @@ renderAll();
 function addStat(){
   const f = d.fixtures.find(function(x){return x.id===liveFixtureId});
   if(!f) return alert("Open a LIVE match first");
+  fixF(f);
   const team = document.getElementById('statTeam').value; // H or A
   const type = document.getElementById('statType').value;
   const suffix = team === 'H' ? 'H' : 'A';
   const other = team === 'H' ? 'A' : 'H';
   if(type === 'poss'){
-    f['poss'+suffix] = Math.min(95, (f['poss'+suffix]||50)+1);
-    f['poss'+other] = 100 - f['poss'+suffix];
+    f.stats['poss'+suffix] = Math.min(95, (f.stats['poss'+suffix]||50)+1);
+    f.stats['poss'+other] = 100 - f.stats['poss'+suffix];
   } else {
-    f[type+suffix] = (f[type+suffix]||0) + 1;
-    if(type === 'shotsOn') f['shots'+suffix] = (f['shots'+suffix]||0) + 1;
+   f.stats[type+suffix] = (f.stats[type+suffix]||0) + 1;
+   if(type === 'shotsOn') f.stats['shots'+suffix] = (f.stats['shots'+suffix]||0) + 1;
   }
   save(); renderAll();
   alert("Added! Fans see it in 2 sec");
@@ -129,7 +130,7 @@ function addStat(){
 function resetStats(){
   const f = d.fixtures.find(function(x){return x.id===liveFixtureId});
   if(!f) return;
-  f.possH=50; f.possA=50; f.shotsH=0; f.shotsA=0; f.shotsOnH=0; f.shotsOnA=0; f.cornersH=0; f.cornersA=0; f.foulsH=0; f.foulsA=0;
+f.stats.possH=50; f.stats.possA=50; f.stats.shotsH=0; f.stats.shotsA=0; f.stats.shotsOnH=0; f.stats.shotsOnA=0; f.stats.cornersH=0; f.stats.cornersA=0; f.stats.foulsH=0; f.stats.foulsA=0;f.stats.AfoulsA=0;
   save(); renderAll();
 }
 // Show stats box only for Admin
