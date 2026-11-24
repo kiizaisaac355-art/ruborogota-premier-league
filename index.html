@@ -39,7 +39,19 @@ table{width:100%;border-collapse:collapse;font-size:14px}th,td{padding:8px;borde
 <div id="tab-players" class="card" style="display:none"><h2>TOP SCORERS</h2><div id="posAward" style="background:#37003c;color:#fff;padding:12px;border-radius:12px"></div><div id="playerAdmin"></div><div id="playerList"></div></div>
 <div id="tab-teams" class="card" style="display:none"><h2>TEAMS</h2><div id="teamAdmin"></div><div id="teamList"></div></div>
 <div id="tab-transfers" class="card" style="display:none"><h2>TRANSFERS</h2><div id="transferAdmin"></div><div id="transferList"></div></div>
-<div id="tab-live" class="card" style="display:none;background:linear-gradient(90deg,#ff2882,#e304f8);color:#fff;text-align:center"><h2>LIVE MATCH CENTER</h2><div id="liveTimer" style="font-size:42px;font-weight:900">00:00</div><div id="liveStatus">Not Started</div><div id="liveAdded" style="color:#fef08a;font-weight:800"></div><div id="liveScoreBig" style="font-size:22px;font-weight:900;margin:8px 0"></div><div id="liveAdmin"></div><div id="goalList" style="text-align:left"></div></div>
+<div id="tab-live" class="card" style="display:none;background:linear-gradient(90deg,#ff2882,#e304f8);color:#fff;text-align:center"><h2>LIVE MATCH CENTER</h2><div id="liveTimer" style="font-size:42px;font-weight:900">00:00</div><div id="liveStatus">Not Started</div><div id="liveAdded" style="color:#fef08a;font-weight:800"></div><div style="background:#fff3cd;padding:10px;border-radius:10px;margin-top:10px">
+<b>📊 STATS - Click +1 Like Opta</b><br>
+Team: <select id="statTeam"><option value="H">Home</option><option value="A">Away</option></select>
+Stat: <select id="statType">
+<option value="shots">Shots</option>
+<option value="shotsOn">Shots on Target</option>
+<option value="corners">Corners</option>
+<option value="fouls">Fouls</option>
+<option value="poss">Possession +1%</option>
+</select>
+<button onclick="addStat()" style="background:#ff0066;color:white;padding:8px 12px;border:none;border-radius:8px;font-weight:bold">+1 ADD</button>
+<button onclick="resetStats()" style="background:#333;color:white;padding:8px;border:none;border-radius:8px">Reset</button>
+</div><div id="liveScoreBig" style="font-size:22px;font-weight:900;margin:8px 0"></div><div id="liveAdmin"></div><div id="goalList" style="text-align:left"></div></div>
 </div>
 <script>
 var TEAMS=["Abesigamukama FC","Ruborogota United","Kashija FC","Kigwera Stars","Rwamucucu FC","Nyamiryango FC","Kitojo Lions","Butare FC","Kakindo FC","Kijubwe FC","Rwengiri FC","Kagarama FC","Mitooma FC","Kashenshero FC","Rukungiri FC","Katerampungu FC","Kyanamira FC","Nyakagyeme FC","Rugarama FC","Buhunga FC"];
@@ -96,6 +108,27 @@ function addAddedTime(m){ if(!requireAdmin()) return; liveAdded=m; document.getE
 function fullTime(){ if(!requireAdmin()) return; if(!liveFixtureId){alert('No live match');return} clearInterval(liveTimer); var fx=d.fixtures.find(function(x){return x.id===liveFixtureId}); fx.status='FT'; fx.played=true; fx.matchSeconds=liveSec; document.getElementById('liveStatus').innerHTML='FULL TIME - '+fx.home+' '+fx.hs+' - '+fx.as+' '+fx.away; liveFixtureId=null; save(); alert('FULL TIME!'); }
 function renderAll(){ checkAdmin(); renderHome(); renderTable(); renderFixtures(); renderPlayers(); renderTeams(); renderTransfers(); renderLive(); }
 renderAll();
+  // --- REAL STATS - OPTA STYLE ---
+function addStat(){
+  const f = d.fixtures.find(function(x){return x.id===liveFixtureId});
+  if(!f) return alert("Open a LIVE match first");
+  const team = document.getElementById('statTeam').value; // H or A
+  const type = document.getElementById('statType').value;
+  const suffix = team === 'H' ? 'H' : 'A';
+  const other = team === 'H' ? 'A' : 'H';
+  if(type === 'poss'){
+    f['poss'+suffix] = Math.min(95, (f['poss'+suffix]||50)+1);
+    f['poss'+other] = 100 - f['poss'+suffix];
+  } else {
+    f[type+suffix] = (f[type+suffix]||0) + 1;
+    if(type === 'shotsOn') f['shots'+suffix] = (f['shots'+suffix]||0) + 1;
+  }
+  save(); renderAll();
+  alert("Added! Fans see it in 2 sec");
+}
+function resetStats(){
+  const f = d.fixtures.find(function(x){return x.id===liveFixtureId});
+  
   // --- FIREBASE LIVE ---
 const firebaseConfig = {
   apiKey: "AIzaSyDsD4AiSqALdDPns8D7-2FIstoU_MK5io",
