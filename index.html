@@ -128,10 +128,14 @@ function addStat(){
 }
 function resetStats(){
   const f = d.fixtures.find(function(x){return x.id===liveFixtureId});
-  // Show stats box only for Admin
-setInterval(()=>{ const b=document.getElementById('statAdminBox'); if(b) b.style.display = (typeof isAdmin!=='undefined' && isAdmin) || localStorage.getItem('rpl_admin')==='1' ? 'block':'none'; }, 500);
-  // --- FIREBASE LIVE ---
-const firebaseConfig = {
+  if(!f) return;
+  f.possH=50; f.possA=50; f.shotsH=0; f.shotsA=0; f.shotsOnH=0; f.shotsOnA=0; f.cornersH=0; f.cornersA=0; f.foulsH=0; f.foulsA=0;
+  save(); renderAll();
+}
+// Show stats box only for Admin
+setInterval(()=>{ const b=document.getElementById('statAdminBox'); if(b) b.style.display = (typeof isAdmin!=='undefined' && isAdmin) ? 'block':'none'; }, 500);
+// --- FIREBASE LIVE ---
+  const firebaseConfig = {
   apiKey: "AIzaSyDsD4AiSqALdDPns8D7-2FIstoU_MK5io",
   authDomain: "ruborogota-premier-league.firebaseapp.com",
   projectId: "ruborogota-premier-league",
