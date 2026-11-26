@@ -62,11 +62,6 @@ var ADMIN_PASS="RPL2026"; var isAdmin=localStorage.getItem('rpl_admin')==='yes';
 var liveTimer=null,liveSec=0,liveAdded=0,liveFixtureId=null;
 function requireAdmin(){ if(!isAdmin){ alert('Admin only. Please login as Admin.'); return false; } return true; }
 var _isTyping = false;
-function save(quiet){
-  localStorage.setItem('rpl_final',JSON.stringify(d));
-  docRef.set({data: JSON.stringify(d)}).catch(function(e){console.log(e)});
-  if(!quiet) renderAll();
-}
 // Firebase will handle fan updates, don't re-render on every save
 function fmtTime(s){ s=Math.max(0,s||0); var m=Math.floor(s/60),ss=s%60; if(m>=90&&liveAdded>0) return '90+'+(m-90)+':'+(ss<10?'0'+ss:ss); return (m<10?'0'+m:m)+':'+(ss<10?'0'+ss:ss); }
 function goPage(p,btn){ ['home','table','fixtures','players','teams','transfers','live'].forEach(function(x){ var el=document.getElementById('tab-'+x); if(el) el.style.display=(x==p?'block':'none'); }); document.querySelectorAll('.navBtn').forEach(function(b){b.classList.remove('active')}); if(btn) btn.classList.add('active'); if(p=='fixtures') renderFixtures(); window.scrollTo(0,0); }
@@ -175,18 +170,10 @@ function save(quiet){
   if(typeof docRef !== 'undefined' && docRef){
     docRef.set({data: JSON.stringify(d)}).catch(function(e){console.log(e)});
   }
-  d = newD;
-localStorage.setItem('rpl_final', JSON.stringify(d));
-// Only update text, don't rebuild inputs if admin is typing
-if(document.getElementById('scorerName') || document.getElementById('com-text') || document.getElementById('edit-hs')){
-  renderLive();
-  // update fixture score text only - do NOT call renderFixtures()
-} else {
-  renderAll();
-}     
-// Keep fan timer moving between Firebase updates
-if(!isAdmin) { /* fan timer is driven by matchSeconds from Firebase */ }
-  // FAN LIVE CLOCK - updates every second from last Firebase value, no page rebuild
+  if(!quiet) renderAll();
+}
+
+// FAN LIVE CLOCK - fans count locally between Firebase updates
 var fanSec=0; var lastFanUpdate=0;
 setInterval(function(){
   var lf=d.fixtures.find(function(x){return x.status==='LIVE'});
@@ -197,20 +184,20 @@ setInterval(function(){
     if(el) el.innerHTML=fmtTime(fanSec);
   }
 },1000);
-docRef.onSnapshot((doc)=>{
+
+docRef.onSnapshot(function(doc){
   if(doc.exists){
     try{
-      const newD = JSON.parse(doc.data().data);
+      var newD = JSON.parse(doc.data().data);
       if(JSON.stringify(newD) !== JSON.stringify(d)){
-      d = newD;
-localStorage.setItem('rpl_final', JSON.stringify(d));
-// Only update text, don't rebuild inputs if admin is typing
-if(document.getElementById('scorerName') || document.getElementById('com-text') || document.getElementById('edit-hs')){
-  renderLive();
-  // update fixture score text only - do NOT call renderFixtures()
-} else {
-  renderAll();
-}       
+        d = newD;
+        localStorage.setItem('rpl_final', JSON.stringify(d));
+        if(document.getElementById('scorerName') || document.getElementById('com-text') || document.getElementById('edit-hs')){
+          renderLive();
+        } else {
+          renderAll();
+        }
+      }
     }catch(e){}
   }
 });
