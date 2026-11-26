@@ -123,7 +123,9 @@ document.getElementById('liveStatus').innerHTML='LIVE - '+fx.home+' '+fx.hs+' - 
 if(liveSec%5===0){ save(true); } // quiet save - fans get it via Firebase, inputs NOT wiped 
 if(Math.floor(liveSec/60)>=90+liveAdded&&liveAdded>0) fullTime(); },1000); document.getElementById('liveStatus').innerHTML='LIVE - '+fx.home+' '+fx.hs+' - '+fx.as+' '+fx.away; save(true); }
 function pauseLive(){ if(!requireAdmin()) return; clearInterval(liveTimer); document.getElementById('liveStatus').innerHTML='PAUSED'; }
-function goalWithScorer(){ if(!requireAdmin()) return; if(!liveFixtureId){alert('Start Live first');return} var fx=d.fixtures.find(function(x){return x.id===liveFixtureId}); var n=document.getElementById('scorerName').value.trim(!n){alert('Enter scorer');return} var tt=document.getElementById('scorerTeam').value; var tm=(tt==='home'?fx.home:fx.away); var min=Math.floor(liveSec/60); var dm=min+"'"; if(min>=90) dm='90+'+(min-90)+"'"; if(tt==='home') fx.hs++; else fx.as++; var p=null; for(var i=0;i<d.players.length;i++){ if(d.players[i].name.toLowerCase()===n.toLowerCase()&&d.players[i].team===tm){p=d.players[i];break} } if(!p){ p={name:n,team:tm,pos:'Striker',goals:0,assists:0,yellow:0,red:0}; d.players.push(p); } p.goals=(p.goals||0)+1; if(!d.commentary[fx.id]) d.commentary[fx.id]=[]; d.commentary[fx.id].unshift({min:dm,text:'GOAL! '+n+' scores for '+tm}); document.getElementById('scorerName').value=''; document.getElementById('goalList').innerHTML+='<div>⚽ '+dm+' '+n+' ('+tm+')</div>'; save(); alert('GOAL! '+n+' '+dm); }
+function goalWithScorer(){ if(!requireAdmin()) return; if(!liveFixtureId){alert('Start Live first');return} var fx=d.fixtures.find(function(x){return x.id===liveFixtureId}); var n=document.getElementById('scorerName').value.trim();
+if(!n){alert('Enter scorer');return} var tt=document.getElementById('scorerTeam').value; var tm=(tt==='home'?fx.home:fx.away); var min=Math.floor(liveSec/60); var dm=min+"'"; if(min>=90) dm='90+'+(min-90)+"'"; if(tt==='home') fx.hs++; else fx.as++; var p=null; for(var i=0;i<d.players.length;i++){ if(d.players[i].name.toLowerCase()===n.toLowerCase()&&d.players[i].team===tm){p=d.players[i];break} } if(!p){ p={name:n,team:tm,pos:'Striker',goals:0,assists:0,yellow:0,red:0}; d.players.push(p); } p.goals=(p.goals||0)+1; if(!d.commentary[fx.id]) d.commentary[fx.id]=[]; d.commentary[fx.id].unshift({min:dm,text:'GOAL! '+n+' scores for '+tm}); document.getElementById('scorerName').value=''; var gl=document.getElementById('goalList');
+if(gl) gl.innerHTML+='<div>⚽ '+dm+' '+n+' ('+tm+')</div>'; save(); alert('GOAL! '+n+' '+dm); }
 function addAddedTime(m){ if(!requireAdmin()) return; liveAdded=m; document.getElementById('liveAdded').innerHTML=m===0?'':'ADDED TIME: +'+m+' - Will go to 90+'+m; }
 function fullTime(){ if(!requireAdmin()) return; if(!liveFixtureId){alert('No live match');return} clearInterval(liveTimer); var fx=d.fixtures.find(function(x){return x.id===liveFixtureId}); fx.status='FT'; fx.played=true; fx.matchSeconds=liveSec; document.getElementById('liveStatus').innerHTML='FULL TIME - '+fx.home+' '+fx.hs+' - '+fx.as+' '+fx.away; liveFixtureId=null; save(); alert('FULL TIME!'); }
 function renderAll(){ checkAdmin(); renderHome(); renderTable(); renderFixtures(); renderPlayers(); renderTeams(); renderTransfers(); renderLive(); }
@@ -173,19 +175,28 @@ function save(quiet){
   if(typeof docRef !== 'undefined' && docRef){
     docRef.set({data: JSON.stringify(d)}).catch(function(e){console.log(e)});
   }
-  if(!quiet) renderAll();
-}
+  d = newD;
+localStorage.setItem('rpl_final', JSON.stringify(d));
+// Only update text, don't rebuild inputs if admin is typing
+if(document.getElementById('scorerName') || document.getElementById('com-text') || document.getElementById('edit-hs')){
+  renderLive();
+  // update fixture score text only - do NOT call renderFixtures()
+} else {
+  renderAll();
+}     
 // Keep fan timer moving between Firebase updates
 if(!isAdmin) { /* fan timer is driven by matchSeconds from Firebase */ }
   // FAN LIVE CLOCK - updates every second from last Firebase value, no page rebuild
+var fanSec=0; var lastFanUpdate=0;
 setInterval(function(){
   var lf=d.fixtures.find(function(x){return x.status==='LIVE'});
   if(lf && !isAdmin){
+    if(lf.matchSeconds!==lastFanUpdate){ fanSec=lf.matchSeconds; lastFanUpdate=lf.matchSeconds; }
+    else fanSec++;
     var el=document.getElementById('liveTimer');
-    if(el) el.innerHTML=fmtTime((lf.matchSeconds||0));
+    if(el) el.innerHTML=fmtTime(fanSec);
   }
 },1000);
-};
 docRef.onSnapshot((doc)=>{
   if(doc.exists){
     try{
